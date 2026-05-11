@@ -7,11 +7,10 @@ export const STAGE_INFO = {
     ],
   },
   6: {
-    title: 'RANK MATCH',
+    title: 'FULL SUITS',
     lines: [
-      'Hearts & Spades now split into Lo and Hi halves.',
-      'Lo = lower · Hi = upper  (♦ and ♣ remain whole)',
-      'Match the correct half to the incoming card.',
+      'Two new suits join the deck: ✦ and ♛',
+      'Six suits — six segments. Match the symbol!',
     ],
   },
   8: {

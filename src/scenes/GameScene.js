@@ -18,7 +18,7 @@ const JOKER_SCORE_GATE = 1000;
 const STAGE_NAMES = {
   2: 'COLOUR MATCH',
   4: 'SUIT MATCH',
-  6: 'RANK MATCH',
+  6: 'FULL SUITS',
   8: 'MASTER MATCH',
 };
 

@@ -10,12 +10,12 @@ export const SEGMENT_STAGES = {
     { label: '♠', color: 0x111111, showLabel: true },
   ],
   6: [
-    { label: '♥ Lo', color: 0xcc2200, showLabel: true },
-    { label: '♥ Hi', color: 0xcc2200, showLabel: true },
-    { label: '♦',    color: 0xcc2200, showLabel: true },
-    { label: '♣',    color: 0x111111, showLabel: true },
-    { label: '♠ Lo', color: 0x111111, showLabel: true },
-    { label: '♠ Hi', color: 0x111111, showLabel: true },
+    { label: '♥', color: 0xcc2200, showLabel: true },
+    { label: '♦', color: 0xcc2200, showLabel: true },
+    { label: '✦', color: 0x007788, showLabel: true },
+    { label: '♛', color: 0x882299, showLabel: true },
+    { label: '♣', color: 0x111111, showLabel: true },
+    { label: '♠', color: 0x111111, showLabel: true },
   ],
   8: [
     { label: '♥ Lo', color: 0xcc2200 },
