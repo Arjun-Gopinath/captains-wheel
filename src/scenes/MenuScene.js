@@ -26,9 +26,12 @@ export class MenuScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.audio('bgm-slow', 'assets/bgm-slow.mp3');
-    this.load.audio('bgm-mid',  'assets/bgm-mid.mp3');
-    this.load.audio('bgm-fast', 'assets/bgm-fast.mp3');
+    this.load.audio('bgm-slow',   'assets/bgm-slow.mp3');
+    this.load.audio('bgm-mid',    'assets/bgm-mid.mp3');
+    this.load.audio('bgm-fast',   'assets/bgm-fast.mp3');
+    this.load.audio('sfx-match',  'assets/sfx-match.mp3');
+    this.load.audio('sfx-miss',   'assets/sfx-miss.mp3');
+    this.load.audio('sfx-lose',   'assets/sfx-lose.mp3');
   }
 
   create() {
@@ -126,6 +129,11 @@ export class MenuScene extends Phaser.Scene {
     for (const key of ['bgm-slow', 'bgm-mid', 'bgm-fast']) {
       if (this.cache.audio.exists(key) && !this.sound.get(key)) {
         this.sound.add(key, { loop: true, volume: 0.35 });
+      }
+    }
+    for (const key of ['sfx-match', 'sfx-miss', 'sfx-lose']) {
+      if (this.cache.audio.exists(key) && !this.sound.get(key)) {
+        this.sound.add(key, { loop: false });
       }
     }
     // Stop any track that may be lingering from a previous game, restart slow

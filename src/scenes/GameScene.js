@@ -221,6 +221,7 @@ export class GameScene extends Phaser.Scene {
 
   _onMatch(x, y, heal, gained) {
     this.cameras.main.flash(120, 0, 180, 0, false);
+    this.sound.get('sfx-match')?.play({ volume: 0.6 });
     new FloatingText(this, x, y, `+${gained}`, '#44ff44');
     if (heal > 0) new FloatingText(this, x, y - 40, `+${heal} HP`, '#88ffcc');
   }
@@ -228,6 +229,7 @@ export class GameScene extends Phaser.Scene {
   _onMiss(x, y) {
     this.cameras.main.flash(200, 200, 0, 0, false);
     this.cameras.main.shake(250, 0.008);
+    this.sound.get('sfx-miss')?.play({ volume: 0.6 });
     new FloatingText(this, x, y, `-${MISS_DAMAGE} HP`, '#ff4444');
   }
 
@@ -257,6 +259,7 @@ export class GameScene extends Phaser.Scene {
   _triggerGameOver() {
     this._cleanupPause();
     this.audio.stop();
+    this.sound.get('sfx-lose')?.play({ volume: 0.7 });
     this.obstacles.clear();
     this.wheel.destroy();
 
