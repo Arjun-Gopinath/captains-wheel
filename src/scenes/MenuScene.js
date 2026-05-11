@@ -59,7 +59,7 @@ export class MenuScene extends Phaser.Scene {
     );
 
     // ── Title ──────────────────────────────────────────────
-    this.add.text(cx, 46, 'THE WHEEL', {
+    this.add.text(cx, 46, "CAPTAIN'S WHEEL", {
       fontSize:        '62px',
       color:           '#ffdd44',
       fontFamily:      'serif',
