@@ -25,21 +25,21 @@ export class Obstacle {
     this.x = x;
     this.y = y;
 
-    const bgColor   = segment.wildcard ? 0xfff8dc : 0xfaf0e6;
-    const textColor = segment.color === 0xcc2200 ? '#cc2200'
-                    : segment.wildcard            ? '#ddaa00'
-                    : '#111111';
+    const bgColor  = segment.wildcard ? 0xfff8dc : segment.color;
+    const showLabel = segment.wildcard || segment.showLabel;
 
     this.graphics = scene.add.graphics();
     this._bgColor = bgColor;
 
-    this.label = scene.add.text(x, y, segment.label, {
-      fontSize:        segment.wildcard ? '32px' : '28px',
-      fontFamily:      'serif',
-      color:           textColor,
-      stroke:          '#ffffff',
-      strokeThickness: 2,
-    }).setOrigin(0.5).setDepth(1).setRotation(this.tilt);
+    this.label = showLabel
+      ? scene.add.text(x, y, segment.label, {
+          fontSize:        segment.wildcard ? '32px' : '28px',
+          fontFamily:      'serif',
+          color:           segment.wildcard ? '#ddaa00' : '#ffffff',
+          stroke:          '#000000',
+          strokeThickness: 3,
+        }).setOrigin(0.5).setDepth(1).setRotation(this.tilt)
+      : null;
 
     this._draw();
   }
@@ -53,7 +53,7 @@ export class Obstacle {
     this.y += this.vy * dt + (this.perpY ?? 0) * wobble;
 
     this._draw();
-    this.label.setPosition(this.x, this.y);
+    if (this.label) this.label.setPosition(this.x, this.y);
   }
 
   distanceTo(x, y) {
@@ -62,7 +62,7 @@ export class Obstacle {
 
   destroy() {
     this.graphics.destroy();
-    this.label.destroy();
+    if (this.label) this.label.destroy();
     this.alive = false;
   }
 

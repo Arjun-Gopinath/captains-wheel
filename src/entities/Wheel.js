@@ -53,10 +53,12 @@ export class Wheel {
 
       const midAngle = start + slice / 2;
       const labelDist = this.radius * LABEL_R;
-      this._labelObjects[i].setPosition(
-        this.x + labelDist * Math.cos(midAngle),
-        this.y + labelDist * Math.sin(midAngle)
-      );
+      if (this._labelObjects[i]) {
+        this._labelObjects[i].setPosition(
+          this.x + labelDist * Math.cos(midAngle),
+          this.y + labelDist * Math.sin(midAngle)
+        );
+      }
     }
 
     // Spokes — one per segment boundary
@@ -85,21 +87,23 @@ export class Wheel {
 
   destroy() {
     this._removeInput();
-    for (const t of this._labelObjects) t.destroy();
+    for (const t of this._labelObjects) if (t) t.destroy();
     this.graphics.destroy();
   }
 
   _initLabels() {
-    for (const t of this._labelObjects) t.destroy();
+    for (const t of this._labelObjects) if (t) t.destroy();
     this._labelObjects = this.segments.map(seg =>
-      this.scene.add.text(0, 0, seg.label, {
-        fontSize:   '22px',
-        color:      '#ffffff',
-        fontFamily: 'serif',
-        fontStyle:  'bold',
-        stroke:     '#000000',
-        strokeThickness: 3,
-      }).setOrigin(0.5).setDepth(5)
+      seg.showLabel
+        ? this.scene.add.text(0, 0, seg.label, {
+            fontSize:        '22px',
+            color:           '#ffffff',
+            fontFamily:      'serif',
+            fontStyle:       'bold',
+            stroke:          '#000000',
+            strokeThickness: 3,
+          }).setOrigin(0.5).setDepth(5)
+        : null
     );
   }
 
