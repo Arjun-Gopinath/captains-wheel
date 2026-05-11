@@ -32,7 +32,7 @@ export class GameScene extends Phaser.Scene {
     const cx = width / 2;
     const cy = height / 2;
 
-    this._drawOcean(width, height);
+    this._drawBackground(width, height);
 
     this.health    = new HealthManager(100);
     this.scorer    = new ScoreManager();
@@ -231,22 +231,53 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
-  _drawOcean(width, height) {
+  _drawBackground(width, height) {
     const bg = this.add.graphics().setDepth(-2);
 
-    bg.fillStyle(0x0a1e36, 1);
+    // Felt base
+    bg.fillStyle(0x1a5c2e, 1);
     bg.fillRect(0, 0, width, height);
 
-    for (let row = 0; row < 8; row++) {
-      const y     = (height / 8) * row + height / 16;
-      const alpha = 0.06 + row * 0.03;
-      bg.lineStyle(1.5, 0x4488bb, alpha);
+    // Diagonal crosshatch — simulates woven felt texture
+    for (let i = -height; i < width + height; i += 10) {
+      bg.lineStyle(1, 0x2d7a42, 0.09);
       bg.beginPath();
-      for (let x = 0; x <= width; x += 8) {
-        const waveY = y + Math.sin(x * 0.04 + row) * 6;
-        x === 0 ? bg.moveTo(x, waveY) : bg.lineTo(x, waveY);
-      }
+      bg.moveTo(i,          0);
+      bg.lineTo(i + height, height);
       bg.strokePath();
+
+      bg.lineStyle(1, 0x2d7a42, 0.09);
+      bg.beginPath();
+      bg.moveTo(i + height, 0);
+      bg.lineTo(i,          height);
+      bg.strokePath();
+    }
+
+    // Edge vignette — four dark strips
+    const vig = 70;
+    bg.fillStyle(0x000000, 0.28);
+    bg.fillRect(0,          0,          vig,   height);
+    bg.fillRect(width - vig, 0,          vig,   height);
+    bg.fillRect(0,          0,          width, vig);
+    bg.fillRect(0,          height - vig, width, vig);
+
+    // Gold double-border frame
+    bg.lineStyle(4, 0xc8a84b, 0.55);
+    bg.strokeRoundedRect(18, 18, width - 36, height - 36, 24);
+    bg.lineStyle(1.5, 0xc8a84b, 0.28);
+    bg.strokeRoundedRect(25, 25, width - 50, height - 50, 20);
+
+    // Corner suit watermarks
+    const corners = [
+      { sym: '♠', x: 56,         y: 56 },
+      { sym: '♥', x: width - 56, y: 56 },
+      { sym: '♣', x: 56,         y: height - 56 },
+      { sym: '♦', x: width - 56, y: height - 56 },
+    ];
+    for (const { sym, x, y } of corners) {
+      this.add.text(x, y, sym, {
+        fontSize: '54px', color: '#ffffff', fontFamily: 'serif',
+      }).setOrigin(0.5).setDepth(-1).setAlpha(0.07);
     }
   }
 }
