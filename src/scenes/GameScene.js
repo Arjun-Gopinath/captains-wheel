@@ -38,12 +38,16 @@ export class GameScene extends Phaser.Scene {
 
     const segments = getActiveSegments(this.scorer.getSegmentCount());
     this.wheel     = new Wheel(this, cx, cy, 160, segments);
-    this.obstacles = new ObstacleManager(this, cx, cy, width, height);
-    this.elapsed   = 0;
+    this.obstacles  = new ObstacleManager(this, cx, cy, width, height);
+    this.elapsed    = 0;
+    this._gameOver  = false;
   }
 
   update(_time, delta) {
+    if (this._gameOver) return;
+
     if (this.health.isDead()) {
+      this._gameOver = true;
       this._triggerGameOver();
       return;
     }
@@ -64,6 +68,8 @@ export class GameScene extends Phaser.Scene {
     const hits = this.obstacles.getObstaclesWithinRadius(COLLISION_RADIUS);
 
     for (const obs of hits) {
+      if (!obs.alive) continue;
+
       const segmentIndex  = this.wheel.getSegmentFacing(obs.approachAngle);
       const facingSegment = segments[segmentIndex];
       const matched       = isMatch(facingSegment, obs.segment);
@@ -71,9 +77,11 @@ export class GameScene extends Phaser.Scene {
       const hitY          = obs.y;
 
       if (matched) {
-        const heal = this.scorer.addMatch();
+        const scoreBefore = this.scorer.score;
+        const heal        = this.scorer.addMatch();
+        const gained      = this.scorer.score - scoreBefore;
         this.health.heal(heal);
-        this._onMatch(hitX, hitY, heal);
+        this._onMatch(hitX, hitY, heal, gained);
       } else {
         this.scorer.addMiss();
         this.health.takeDamage(MISS_DAMAGE);
@@ -81,7 +89,8 @@ export class GameScene extends Phaser.Scene {
       }
 
       this.obstacles.remove(obs);
-      this._syncWheelSegments(segments);
+
+      if (this._syncWheelSegments(segments)) break;
     }
   }
 
@@ -91,12 +100,14 @@ export class GameScene extends Phaser.Scene {
       this.obstacles.clear();
       this.wheel.setSegments(next);
       this._showStageBanner(next.length);
+      return true;
     }
+    return false;
   }
 
-  _onMatch(x, y, heal) {
+  _onMatch(x, y, heal, gained) {
     this.cameras.main.flash(120, 0, 180, 0, false);
-    new FloatingText(this, x, y, `+${this.scorer.combo >= 5 ? this.scorer.score % 100 || 10 : 10}`, '#44ff44');
+    new FloatingText(this, x, y, `+${gained}`, '#44ff44');
     if (heal > 0) new FloatingText(this, x, y - 40, `+${heal} HP`, '#88ffcc');
   }
 

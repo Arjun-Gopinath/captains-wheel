@@ -14,7 +14,7 @@ export class UIManager {
 
     this.healthFill = scene.add.graphics().setDepth(11);
 
-    this.healthLabel = scene.add.text(BAR_X, BAR_Y - 18, 'HP', {
+    this.healthLabel = scene.add.text(BAR_X + BAR_W + 8, BAR_Y + 2, 'HP', {
       fontSize: '14px', color: '#aaaaaa',
     }).setDepth(11);
 

@@ -15,7 +15,7 @@ export class ObstacleManager {
     this.width        = width;
     this.height       = height;
     this.obstacles    = [];
-    this.timer        = 0;
+    this.timer        = BASE_INTERVAL; // spawn on first update frame
     this.jokerEnabled = false;
   }
 
