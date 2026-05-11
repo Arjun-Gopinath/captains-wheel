@@ -6,6 +6,7 @@ import { ScoreManager } from '../managers/ScoreManager.js';
 import { UIManager } from '../managers/UIManager.js';
 import { getActiveSegments } from '../config/segments.js';
 import { isMatch } from '../utils/matcher.js';
+import { computeObstacleSpeed, computeSpawnInterval, BASE_SPEED, BASE_INTERVAL } from '../utils/speedScaler.js';
 
 const COLLISION_RADIUS = 170;
 const MISS_DAMAGE      = 10;
@@ -27,6 +28,7 @@ export class GameScene extends Phaser.Scene {
     const segments = getActiveSegments(this.scorer.getSegmentCount());
     this.wheel     = new Wheel(this, cx, cy, 160, segments);
     this.obstacles = new ObstacleManager(this, cx, cy, width, height);
+    this.elapsed   = 0;
   }
 
   update(_time, delta) {
@@ -35,8 +37,11 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
-    const segments = getActiveSegments(this.scorer.getSegmentCount());
-    this.obstacles.update(delta, segments);
+    this.elapsed += delta / 1000;
+    const segments      = getActiveSegments(this.scorer.getSegmentCount());
+    const speed         = computeObstacleSpeed(BASE_SPEED, this.scorer.score, this.elapsed);
+    const spawnInterval = computeSpawnInterval(BASE_INTERVAL, this.scorer.score, this.elapsed);
+    this.obstacles.update(delta, segments, speed, spawnInterval);
     this._resolveCollisions(segments);
     this.ui.update(this.health, this.scorer);
   }

@@ -1,9 +1,7 @@
 import { Obstacle } from '../entities/Obstacle.js';
 import { getEdgeSpawnPoint } from '../utils/angles.js';
 import { pickRandomAngle } from '../utils/spawner.js';
-
-const SPAWN_INTERVAL = 2000;
-const BASE_SPEED     = 120;
+import { BASE_SPEED, BASE_INTERVAL } from '../utils/speedScaler.js';
 
 export class ObstacleManager {
   constructor(scene, cx, cy, width, height) {
@@ -16,12 +14,12 @@ export class ObstacleManager {
     this.timer     = 0;
   }
 
-  update(delta, segments) {
+  update(delta, segments, speed = BASE_SPEED, spawnInterval = BASE_INTERVAL) {
     this.timer += delta;
 
-    if (this.timer >= SPAWN_INTERVAL) {
+    if (this.timer >= spawnInterval) {
       this.timer = 0;
-      this._spawn(segments);
+      this._spawn(segments, speed);
     }
 
     for (const obs of this.obstacles) {
@@ -43,12 +41,12 @@ export class ObstacleManager {
     this.obstacles = [];
   }
 
-  _spawn(segments) {
+  _spawn(segments, speed) {
     const angle    = pickRandomAngle();
     const { x, y } = getEdgeSpawnPoint(angle, this.cx, this.cy, this.width, this.height);
     const segment  = segments[Math.floor(Math.random() * segments.length)];
     this.obstacles.push(
-      new Obstacle(this.scene, x, y, this.cx, this.cy, BASE_SPEED, segment)
+      new Obstacle(this.scene, x, y, this.cx, this.cy, speed, segment)
     );
   }
 }

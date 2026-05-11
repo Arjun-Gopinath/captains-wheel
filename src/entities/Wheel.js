@@ -1,29 +1,33 @@
 import Phaser from 'phaser';
-import { getPointerAngle, getSegmentIndexFacing, normalizeAngle } from '../utils/angles.js';
+import { getPointerAngle, getSegmentIndexFacing } from '../utils/angles.js';
 
-const RIM_COLOR = 0x8b5e3c;
+const RIM_COLOR  = 0x8b5e3c;
 const HUB_RADIUS = 18;
 const HIT_MARGIN = 30;
+const LABEL_R    = 0.62;
 
 export class Wheel {
   constructor(scene, x, y, radius, segments) {
-    this.scene = scene;
-    this.x = x;
-    this.y = y;
-    this.radius = radius;
+    this.scene    = scene;
+    this.x        = x;
+    this.y        = y;
+    this.radius   = radius;
     this.segments = segments;
-    this.angle = 0;
+    this.angle    = 0;
 
-    this.graphics = scene.add.graphics();
-    this.isDragging = false;
+    this.graphics       = scene.add.graphics();
+    this._labelObjects  = [];
+    this.isDragging     = false;
     this.lastPointerAngle = 0;
 
+    this._initLabels();
     this.draw();
     this._registerInput();
   }
 
   setSegments(segments) {
     this.segments = segments;
+    this._initLabels();
     this.draw();
   }
 
@@ -39,12 +43,20 @@ export class Wheel {
 
     for (let i = 0; i < count; i++) {
       const start = this.angle + i * slice;
+
       this.graphics.fillStyle(this.segments[i].color, 1);
       this.graphics.beginPath();
       this.graphics.moveTo(this.x, this.y);
       this.graphics.arc(this.x, this.y, this.radius, start, start + slice, false);
       this.graphics.closePath();
       this.graphics.fillPath();
+
+      const midAngle = start + slice / 2;
+      const labelDist = this.radius * LABEL_R;
+      this._labelObjects[i].setPosition(
+        this.x + labelDist * Math.cos(midAngle),
+        this.y + labelDist * Math.sin(midAngle)
+      );
     }
 
     this.graphics.lineStyle(6, RIM_COLOR, 1);
@@ -56,7 +68,22 @@ export class Wheel {
 
   destroy() {
     this._removeInput();
+    for (const t of this._labelObjects) t.destroy();
     this.graphics.destroy();
+  }
+
+  _initLabels() {
+    for (const t of this._labelObjects) t.destroy();
+    this._labelObjects = this.segments.map(seg =>
+      this.scene.add.text(0, 0, seg.label, {
+        fontSize:   '22px',
+        color:      '#ffffff',
+        fontFamily: 'serif',
+        fontStyle:  'bold',
+        stroke:     '#000000',
+        strokeThickness: 3,
+      }).setOrigin(0.5).setDepth(5)
+    );
   }
 
   _registerInput() {

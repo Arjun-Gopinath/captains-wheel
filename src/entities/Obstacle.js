@@ -20,7 +20,9 @@ export class Obstacle {
     this.label = scene.add.text(x, y, segment.label, {
       fontSize: '28px',
       fontFamily: 'serif',
-      color: segment.color === 0xcc2200 ? '#cc2200' : '#eeeeee',
+      color:  segment.color === 0xcc2200 ? '#cc2200' : '#111111',
+      stroke: '#ffffff',
+      strokeThickness: 2,
     }).setOrigin(0.5).setDepth(1);
 
     this._draw();
