@@ -59,6 +59,23 @@ export class Wheel {
       );
     }
 
+    // Spokes — one per segment boundary
+    const spokeCount = this.segments.length;
+    this.graphics.lineStyle(4, RIM_COLOR, 0.85);
+    for (let i = 0; i < spokeCount; i++) {
+      const a = this.angle + i * ((Math.PI * 2) / spokeCount);
+      this.graphics.beginPath();
+      this.graphics.moveTo(
+        this.x + HUB_RADIUS * Math.cos(a),
+        this.y + HUB_RADIUS * Math.sin(a)
+      );
+      this.graphics.lineTo(
+        this.x + this.radius * Math.cos(a),
+        this.y + this.radius * Math.sin(a)
+      );
+      this.graphics.strokePath();
+    }
+
     this.graphics.lineStyle(6, RIM_COLOR, 1);
     this.graphics.strokeCircle(this.x, this.y, this.radius);
 

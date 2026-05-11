@@ -41,6 +41,13 @@ export class UIManager {
 
     this.scoreText.setText(`Score: ${scorer.score}`);
     this.highScoreText.setText(`Best: ${scorer.highScore}`);
-    this.comboText.setText(scorer.combo >= COMBO_MIN ? `${scorer.combo}× Combo!` : '');
+
+    if (scorer.combo >= COMBO_MIN) {
+      const fontSize = scorer.combo >= 20 ? '30px' : scorer.combo >= 10 ? '24px' : '20px';
+      this.comboText.setFontSize(fontSize);
+      this.comboText.setText(`${scorer.combo}× Combo!`);
+    } else {
+      this.comboText.setText('');
+    }
   }
 }

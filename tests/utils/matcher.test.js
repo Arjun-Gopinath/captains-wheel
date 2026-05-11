@@ -20,4 +20,17 @@ describe('isMatch', () => {
   it('is case-sensitive', () => {
     expect(isMatch({ label: 'red' }, { label: 'RED' })).toBe(false);
   });
+
+  describe('wildcard (Joker)', () => {
+    it('joker matches any wheel segment', () => {
+      expect(isMatch({ label: 'RED' },   { label: '★', wildcard: true })).toBe(true);
+      expect(isMatch({ label: 'BLACK' }, { label: '★', wildcard: true })).toBe(true);
+      expect(isMatch({ label: '♥' },    { label: '★', wildcard: true })).toBe(true);
+      expect(isMatch({ label: '♠' },    { label: '★', wildcard: true })).toBe(true);
+    });
+
+    it('non-wildcard obstacle does not match a different segment', () => {
+      expect(isMatch({ label: '♥' }, { label: '♦', wildcard: false })).toBe(false);
+    });
+  });
 });

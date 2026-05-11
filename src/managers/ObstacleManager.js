@@ -1,17 +1,22 @@
 import { Obstacle } from '../entities/Obstacle.js';
+import { JOKER_SEGMENT } from '../config/segments.js';
 import { getEdgeSpawnPoint } from '../utils/angles.js';
 import { pickRandomAngle } from '../utils/spawner.js';
 import { BASE_SPEED, BASE_INTERVAL } from '../utils/speedScaler.js';
 
+const JOKER_CHANCE = 0.15;
+const JOKER_SPEED_MULT = 1.4;
+
 export class ObstacleManager {
   constructor(scene, cx, cy, width, height) {
-    this.scene     = scene;
-    this.cx        = cx;
-    this.cy        = cy;
-    this.width     = width;
-    this.height    = height;
-    this.obstacles = [];
-    this.timer     = 0;
+    this.scene        = scene;
+    this.cx           = cx;
+    this.cy           = cy;
+    this.width        = width;
+    this.height       = height;
+    this.obstacles    = [];
+    this.timer        = 0;
+    this.jokerEnabled = false;
   }
 
   update(delta, segments, speed = BASE_SPEED, spawnInterval = BASE_INTERVAL) {
@@ -44,9 +49,13 @@ export class ObstacleManager {
   _spawn(segments, speed) {
     const angle    = pickRandomAngle();
     const { x, y } = getEdgeSpawnPoint(angle, this.cx, this.cy, this.width, this.height);
-    const segment  = segments[Math.floor(Math.random() * segments.length)];
+
+    const spawnJoker = this.jokerEnabled && Math.random() < JOKER_CHANCE;
+    const segment    = spawnJoker ? JOKER_SEGMENT : segments[Math.floor(Math.random() * segments.length)];
+    const finalSpeed = spawnJoker ? speed * JOKER_SPEED_MULT : speed;
+
     this.obstacles.push(
-      new Obstacle(this.scene, x, y, this.cx, this.cy, speed, segment)
+      new Obstacle(this.scene, x, y, this.cx, this.cy, finalSpeed, segment, { erratic: spawnJoker })
     );
   }
 }

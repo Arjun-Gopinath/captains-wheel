@@ -29,6 +29,8 @@ export const SEGMENT_STAGES = {
   ],
 };
 
+export const JOKER_SEGMENT = { label: '★', color: 0xddaa00, wildcard: true };
+
 export function getActiveSegments(count) {
   return SEGMENT_STAGES[count] ?? SEGMENT_STAGES[2];
 }
