@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeAngle, getPointerAngle, getSegmentIndexFacing } from '../../src/utils/angles.js';
+import { normalizeAngle, getPointerAngle, getSegmentIndexFacing, getEdgeSpawnPoint } from '../../src/utils/angles.js';
 
 describe('normalizeAngle', () => {
   it('returns 0 for 0', () => {
@@ -60,5 +60,39 @@ describe('getSegmentIndexFacing', () => {
       expect(getSegmentIndexFacing(Math.PI, 0, 4)).toBe(2);
       expect(getSegmentIndexFacing(3 * h,   0, 4)).toBe(3);
     });
+  });
+});
+
+describe('getEdgeSpawnPoint', () => {
+  const cx = 400, cy = 300, w = 800, h = 600;
+
+  it('spawns on the right edge at angle 0', () => {
+    const p = getEdgeSpawnPoint(0, cx, cy, w, h);
+    expect(p.x).toBeCloseTo(800);
+    expect(p.y).toBeCloseTo(300);
+  });
+
+  it('spawns on the bottom edge at angle π/2', () => {
+    const p = getEdgeSpawnPoint(Math.PI / 2, cx, cy, w, h);
+    expect(p.x).toBeCloseTo(400);
+    expect(p.y).toBeCloseTo(600);
+  });
+
+  it('spawns on the left edge at angle π', () => {
+    const p = getEdgeSpawnPoint(Math.PI, cx, cy, w, h);
+    expect(p.x).toBeCloseTo(0);
+    expect(p.y).toBeCloseTo(300);
+  });
+
+  it('spawns on the top edge at angle -π/2', () => {
+    const p = getEdgeSpawnPoint(-Math.PI / 2, cx, cy, w, h);
+    expect(p.x).toBeCloseTo(400);
+    expect(p.y).toBeCloseTo(0);
+  });
+
+  it('spawns on the bottom edge for a downward-right diagonal', () => {
+    const p = getEdgeSpawnPoint(Math.PI / 4, cx, cy, w, h);
+    expect(p.x).toBeCloseTo(700);
+    expect(p.y).toBeCloseTo(600);
   });
 });

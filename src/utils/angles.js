@@ -12,3 +12,22 @@ export function getSegmentIndexFacing(directionAngle, wheelAngle, segmentCount) 
   const relative = normalizeAngle(directionAngle - wheelAngle);
   return Math.floor(relative / (TWO_PI / segmentCount));
 }
+
+export function getEdgeSpawnPoint(angle, cx, cy, width, height) {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const candidates = [];
+
+  if (Math.abs(cos) > 1e-10) {
+    const t = cos > 0 ? (width - cx) / cos : -cx / cos;
+    if (t > 0) candidates.push(t);
+  }
+
+  if (Math.abs(sin) > 1e-10) {
+    const t = sin > 0 ? (height - cy) / sin : -cy / sin;
+    if (t > 0) candidates.push(t);
+  }
+
+  const t = Math.min(...candidates);
+  return { x: cx + t * cos, y: cy + t * sin };
+}
