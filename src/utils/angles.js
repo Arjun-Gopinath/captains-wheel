@@ -31,3 +31,9 @@ export function getEdgeSpawnPoint(angle, cx, cy, width, height) {
   const t = Math.min(...candidates);
   return { x: cx + t * cos, y: cy + t * sin };
 }
+
+export function normalizeSpeedForDistance(speed, spawnX, spawnY, cx, cy) {
+  const dist   = Math.hypot(spawnX - cx, spawnY - cy);
+  const refDist = cx; // half canvas width — right-edge spawn is the reference
+  return speed * (dist / refDist);
+}

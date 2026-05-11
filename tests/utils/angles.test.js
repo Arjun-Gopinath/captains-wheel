@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeAngle, getPointerAngle, getSegmentIndexFacing, getEdgeSpawnPoint } from '../../src/utils/angles.js';
+import { normalizeAngle, getPointerAngle, getSegmentIndexFacing, getEdgeSpawnPoint, normalizeSpeedForDistance } from '../../src/utils/angles.js';
 
 describe('normalizeAngle', () => {
   it('returns 0 for 0', () => {
@@ -94,5 +94,39 @@ describe('getEdgeSpawnPoint', () => {
     const p = getEdgeSpawnPoint(Math.PI / 4, cx, cy, w, h);
     expect(p.x).toBeCloseTo(700);
     expect(p.y).toBeCloseTo(600);
+  });
+});
+
+describe('normalizeSpeedForDistance', () => {
+  const cx = 400, cy = 300, speed = 120;
+
+  it('returns base speed for a right-edge spawn (reference distance)', () => {
+    expect(normalizeSpeedForDistance(speed, 800, 300, cx, cy)).toBeCloseTo(120);
+  });
+
+  it('returns reduced speed for a bottom-edge spawn (shorter distance)', () => {
+    expect(normalizeSpeedForDistance(speed, 400, 600, cx, cy)).toBeCloseTo(90);
+  });
+
+  it('returns reduced speed for a top-edge spawn (shorter distance)', () => {
+    expect(normalizeSpeedForDistance(speed, 400, 0, cx, cy)).toBeCloseTo(90);
+  });
+
+  it('returns increased speed for a corner spawn (longer distance)', () => {
+    const s = normalizeSpeedForDistance(speed, 800, 600, cx, cy);
+    expect(s).toBeCloseTo(120 * (500 / 400));
+  });
+
+  it('all spawns arrive at the same travel time', () => {
+    const travelTime = (spawnX, spawnY) => {
+      const dist = Math.hypot(spawnX - cx, spawnY - cy);
+      const s    = normalizeSpeedForDistance(speed, spawnX, spawnY, cx, cy);
+      return dist / s;
+    };
+    const referenceTime = travelTime(800, 300);
+    expect(travelTime(400, 600)).toBeCloseTo(referenceTime);
+    expect(travelTime(400, 0)).toBeCloseTo(referenceTime);
+    expect(travelTime(0,   300)).toBeCloseTo(referenceTime);
+    expect(travelTime(800, 600)).toBeCloseTo(referenceTime);
   });
 });
