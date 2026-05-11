@@ -9,6 +9,7 @@ import { FloatingText } from '../entities/FloatingText.js';
 import { getActiveSegments } from '../config/segments.js';
 import { isMatch } from '../utils/matcher.js';
 import { computeObstacleSpeed, computeSpawnInterval, BASE_SPEED, BASE_INTERVAL } from '../utils/speedScaler.js';
+import { SettingsManager } from '../managers/SettingsManager.js';
 
 const COLLISION_RADIUS = 170;
 const MISS_DAMAGE      = 10;
@@ -36,6 +37,7 @@ export class GameScene extends Phaser.Scene {
     this.health    = new HealthManager(100);
     this.scorer    = new ScoreManager();
     this.pauser    = new PauseManager();
+    this.settings  = new SettingsManager();
     this.ui        = new UIManager(this, width);
 
     const segments = getActiveSegments(this.scorer.getSegmentCount());
@@ -44,7 +46,7 @@ export class GameScene extends Phaser.Scene {
     this.elapsed   = 0;
     this._gameOver = false;
 
-    this._setupPause(width);
+    this._setupPause(width, height);
     this.events.once('shutdown', this._cleanupPause, this);
   }
 
@@ -69,24 +71,41 @@ export class GameScene extends Phaser.Scene {
     this.ui.update(this.health, this.scorer);
   }
 
-  _setupPause(width) {
+  _setupPause(width, height) {
     this._pauseKey1 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
     this._pauseKey2 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
 
     this._pauseKey1.on('down', this._onPauseKey, this);
     this._pauseKey2.on('down', this._onPauseKey, this);
 
-    this._pauseBtn = this.add.text(width / 2, 55, '❙❙  PAUSE', {
-      fontSize:        '15px',
+    const btnY = height - 14;
+
+    this._pauseBtn = this.add.text(width / 2 - 58, btnY, '❙❙  PAUSE', {
+      fontSize:        '14px',
       color:           '#cccccc',
       fontFamily:      'monospace',
       backgroundColor: '#1a3a5c',
-      padding:         { x: 10, y: 4 },
-    }).setOrigin(0.5, 0).setDepth(12).setInteractive({ useHandCursor: true });
+      padding:         { x: 10, y: 5 },
+    }).setOrigin(0.5, 1).setDepth(12).setInteractive({ useHandCursor: true });
 
     this._pauseBtn.on('pointerover', () => this._pauseBtn.setColor('#ffffff'));
     this._pauseBtn.on('pointerout',  () => this._pauseBtn.setColor('#cccccc'));
     this._pauseBtn.on('pointerdown', this._pauseGame, this);
+
+    this._hintsBtn = this.add.text(width / 2 + 58, btnY, this._hintsBtnLabel(), {
+      fontSize:        '14px',
+      color:           '#cccccc',
+      fontFamily:      'monospace',
+      backgroundColor: '#1a3a5c',
+      padding:         { x: 10, y: 5 },
+    }).setOrigin(0.5, 1).setDepth(12).setInteractive({ useHandCursor: true });
+
+    this._hintsBtn.on('pointerover', () => this._hintsBtn.setColor('#ffffff'));
+    this._hintsBtn.on('pointerout',  () => this._hintsBtn.setColor('#cccccc'));
+    this._hintsBtn.on('pointerdown', () => {
+      this.settings.toggle();
+      this._hintsBtn.setText(this._hintsBtnLabel());
+    });
 
     this._onVisibilityChange = () => {
       if (document.hidden && !this._gameOver && !this.pauser.isPaused) {
@@ -152,10 +171,19 @@ export class GameScene extends Phaser.Scene {
     if (next.length !== currentSegments.length) {
       this.obstacles.clear();
       this.wheel.setSegments(next);
-      this._showStageBanner(next.length);
+      if (this.settings.hintsEnabled) {
+        this.scene.pause();
+        this.scene.launch('TransitionScene', { segmentCount: next.length });
+      } else {
+        this._showStageBanner(next.length);
+      }
       return true;
     }
     return false;
+  }
+
+  _hintsBtnLabel() {
+    return this.settings.hintsEnabled ? 'HINTS: ON' : 'HINTS: OFF';
   }
 
   _onMatch(x, y, heal, gained) {
