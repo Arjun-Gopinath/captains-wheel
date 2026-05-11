@@ -3,15 +3,16 @@ import { Wheel } from '../entities/Wheel.js';
 import { ObstacleManager } from '../managers/ObstacleManager.js';
 import { HealthManager } from '../managers/HealthManager.js';
 import { ScoreManager } from '../managers/ScoreManager.js';
+import { PauseManager } from '../managers/PauseManager.js';
 import { UIManager } from '../managers/UIManager.js';
 import { FloatingText } from '../entities/FloatingText.js';
 import { getActiveSegments } from '../config/segments.js';
 import { isMatch } from '../utils/matcher.js';
 import { computeObstacleSpeed, computeSpawnInterval, BASE_SPEED, BASE_INTERVAL } from '../utils/speedScaler.js';
 
-const COLLISION_RADIUS  = 170;
-const MISS_DAMAGE       = 10;
-const JOKER_SCORE_GATE  = 1000;
+const COLLISION_RADIUS = 170;
+const MISS_DAMAGE      = 10;
+const JOKER_SCORE_GATE = 1000;
 
 const STAGE_NAMES = {
   2: 'COLOUR MATCH',
@@ -34,13 +35,17 @@ export class GameScene extends Phaser.Scene {
 
     this.health    = new HealthManager(100);
     this.scorer    = new ScoreManager();
+    this.pauser    = new PauseManager();
     this.ui        = new UIManager(this, width);
 
     const segments = getActiveSegments(this.scorer.getSegmentCount());
     this.wheel     = new Wheel(this, cx, cy, 160, segments);
-    this.obstacles  = new ObstacleManager(this, cx, cy, width, height);
-    this.elapsed    = 0;
-    this._gameOver  = false;
+    this.obstacles = new ObstacleManager(this, cx, cy, width, height);
+    this.elapsed   = 0;
+    this._gameOver = false;
+
+    this._setupPause(width);
+    this.events.once('shutdown', this._cleanupPause, this);
   }
 
   update(_time, delta) {
@@ -62,6 +67,55 @@ export class GameScene extends Phaser.Scene {
     this.obstacles.update(delta, segments, speed, spawnInterval);
     this._resolveCollisions(segments);
     this.ui.update(this.health, this.scorer);
+  }
+
+  _setupPause(width) {
+    this._pauseKey1 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+    this._pauseKey2 = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+
+    this._pauseKey1.on('down', this._onPauseKey, this);
+    this._pauseKey2.on('down', this._onPauseKey, this);
+
+    this._pauseBtn = this.add.text(width / 2, 14, '❙❙  PAUSE', {
+      fontSize:        '15px',
+      color:           '#cccccc',
+      fontFamily:      'monospace',
+      backgroundColor: '#1a3a5c',
+      padding:         { x: 10, y: 4 },
+    }).setOrigin(0.5, 0).setDepth(12).setInteractive({ useHandCursor: true });
+
+    this._pauseBtn.on('pointerover', () => this._pauseBtn.setColor('#ffffff'));
+    this._pauseBtn.on('pointerout',  () => this._pauseBtn.setColor('#cccccc'));
+    this._pauseBtn.on('pointerdown', this._pauseGame, this);
+
+    this._onVisibilityChange = () => {
+      if (document.hidden && !this._gameOver && !this.pauser.isPaused) {
+        this._pauseGame();
+      }
+    };
+    document.addEventListener('visibilitychange', this._onVisibilityChange);
+
+    this.events.on('resume', () => {
+      this.pauser.resume();
+      this._pauseBtn.setText('❙❙  PAUSE');
+    });
+  }
+
+  _onPauseKey() {
+    if (this.pauser.isPaused) return;
+    this._pauseGame();
+  }
+
+  _pauseGame() {
+    if (this._gameOver || this.pauser.isPaused) return;
+    this.pauser.pause();
+    this._pauseBtn.setText('▶  RESUME');
+    this.scene.pause();
+    this.scene.launch('PauseScene');
+  }
+
+  _cleanupPause() {
+    document.removeEventListener('visibilitychange', this._onVisibilityChange);
   }
 
   _resolveCollisions(segments) {
@@ -89,7 +143,6 @@ export class GameScene extends Phaser.Scene {
       }
 
       this.obstacles.remove(obs);
-
       if (this._syncWheelSegments(segments)) break;
     }
   }
@@ -141,6 +194,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   _triggerGameOver() {
+    this._cleanupPause();
     this.obstacles.clear();
     this.wheel.destroy();
     this.scene.start('GameOverScene', {
@@ -156,7 +210,7 @@ export class GameScene extends Phaser.Scene {
     bg.fillRect(0, 0, width, height);
 
     for (let row = 0; row < 8; row++) {
-      const y   = (height / 8) * row + height / 16;
+      const y     = (height / 8) * row + height / 16;
       const alpha = 0.06 + row * 0.03;
       bg.lineStyle(1.5, 0x4488bb, alpha);
       bg.beginPath();
