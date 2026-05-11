@@ -8,10 +8,10 @@ export class Obstacle {
     this.segment = segment;
     this.alive = true;
 
-    const angle = Math.atan2(targetY - y, targetX - x);
-    this.vx = Math.cos(angle) * speed;
-    this.vy = Math.sin(angle) * speed;
-    this.directionAngle = angle;
+    const travelAngle = Math.atan2(targetY - y, targetX - x);
+    this.vx = Math.cos(travelAngle) * speed;
+    this.vy = Math.sin(travelAngle) * speed;
+    this.approachAngle = Math.atan2(y - targetY, x - targetX);
 
     this.x = x;
     this.y = y;

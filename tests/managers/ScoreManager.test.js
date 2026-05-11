@@ -64,22 +64,22 @@ describe('ScoreManager', () => {
       expect(heal).toBe(0);
     });
 
-    it('returns 5 HP at combo milestone 20', () => {
+    it('returns 2 HP at combo milestone 20', () => {
       for (let i = 0; i < 19; i++) score.addMatch();
+      const heal = score.addMatch();
+      expect(heal).toBe(2);
+    });
+
+    it('returns 5 HP at combo milestone 50', () => {
+      for (let i = 0; i < 49; i++) score.addMatch();
       const heal = score.addMatch();
       expect(heal).toBe(5);
     });
 
-    it('returns 15 HP at combo milestone 50', () => {
-      for (let i = 0; i < 49; i++) score.addMatch();
-      const heal = score.addMatch();
-      expect(heal).toBe(15);
-    });
-
-    it('returns 30 HP at combo milestone 100', () => {
+    it('returns 10 HP at combo milestone 100', () => {
       for (let i = 0; i < 99; i++) score.addMatch();
       const heal = score.addMatch();
-      expect(heal).toBe(30);
+      expect(heal).toBe(10);
     });
   });
 
