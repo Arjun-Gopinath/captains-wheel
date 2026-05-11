@@ -22,6 +22,10 @@ export class UIManager {
       fontSize: '20px', color: '#ffffff', fontFamily: 'monospace',
     }).setOrigin(1, 0).setDepth(11);
 
+    this.highScoreText = scene.add.text(width - BAR_X, BAR_Y + 26, 'Best: 0', {
+      fontSize: '14px', color: '#ffcc00', fontFamily: 'monospace',
+    }).setOrigin(1, 0).setDepth(11);
+
     this.comboText = scene.add.text(width / 2, BAR_Y, '', {
       fontSize: '18px', color: '#ffcc00', fontFamily: 'monospace',
     }).setOrigin(0.5, 0).setDepth(11);
@@ -36,6 +40,7 @@ export class UIManager {
     this.healthFill.fillRect(BAR_X, BAR_Y, BAR_W * pct, BAR_H);
 
     this.scoreText.setText(`Score: ${scorer.score}`);
+    this.highScoreText.setText(`Best: ${scorer.highScore}`);
     this.comboText.setText(scorer.combo >= COMBO_MIN ? `${scorer.combo}× Combo!` : '');
   }
 }

@@ -24,13 +24,16 @@ export class GameScene extends Phaser.Scene {
     this.scorer    = new ScoreManager();
     this.ui        = new UIManager(this, width);
 
-    const segments  = getActiveSegments(this.scorer.getSegmentCount());
-    this.wheel      = new Wheel(this, cx, cy, 160, segments);
-    this.obstacles  = new ObstacleManager(this, cx, cy, width, height);
+    const segments = getActiveSegments(this.scorer.getSegmentCount());
+    this.wheel     = new Wheel(this, cx, cy, 160, segments);
+    this.obstacles = new ObstacleManager(this, cx, cy, width, height);
   }
 
   update(_time, delta) {
-    if (this.health.isDead()) return;
+    if (this.health.isDead()) {
+      this._triggerGameOver();
+      return;
+    }
 
     const segments = getActiveSegments(this.scorer.getSegmentCount());
     this.obstacles.update(delta, segments);
@@ -64,8 +67,18 @@ export class GameScene extends Phaser.Scene {
   _syncWheelSegments(currentSegments) {
     const next = getActiveSegments(this.scorer.getSegmentCount());
     if (next.length !== currentSegments.length) {
+      this.obstacles.clear();
       this.wheel.setSegments(next);
     }
+  }
+
+  _triggerGameOver() {
+    this.obstacles.clear();
+    this.wheel.destroy();
+    this.scene.start('GameOverScene', {
+      score:     this.scorer.score,
+      highScore: this.scorer.highScore,
+    });
   }
 
   _flashMatch() {
