@@ -26,8 +26,9 @@ export class MenuScene extends Phaser.Scene {
   }
 
   preload() {
-    // Place bgm.mp3 in public/assets/ to enable background music
-    this.load.audio('bgm', 'assets/bgm.mp3');
+    this.load.audio('bgm-slow', 'assets/bgm-slow.mp3');
+    this.load.audio('bgm-mid',  'assets/bgm-mid.mp3');
+    this.load.audio('bgm-fast', 'assets/bgm-fast.mp3');
   }
 
   create() {
@@ -122,9 +123,15 @@ export class MenuScene extends Phaser.Scene {
     const settings = new SettingsManager();
     this.game.sound.mute = !settings.musicEnabled;
 
-    if (this.cache.audio.exists('bgm') && !this.sound.get('bgm')) {
-      this.sound.add('bgm', { loop: true, volume: 0.35 }).play();
+    for (const key of ['bgm-slow', 'bgm-mid', 'bgm-fast']) {
+      if (this.cache.audio.exists(key) && !this.sound.get(key)) {
+        this.sound.add(key, { loop: true, volume: 0.35 });
+      }
     }
+    // Stop any track that may be lingering from a previous game, restart slow
+    for (const key of ['bgm-mid', 'bgm-fast']) this.sound.get(key)?.stop();
+    const slow = this.sound.get('bgm-slow');
+    if (slow && !slow.isPlaying) slow.play();
   }
 
   update(_time, delta) {

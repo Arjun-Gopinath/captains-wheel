@@ -10,6 +10,7 @@ import { getActiveSegments } from '../config/segments.js';
 import { isMatch } from '../utils/matcher.js';
 import { computeObstacleSpeed, computeSpawnInterval, BASE_SPEED, BASE_INTERVAL } from '../utils/speedScaler.js';
 import { SettingsManager } from '../managers/SettingsManager.js';
+import { AudioManager } from '../managers/AudioManager.js';
 import { drawFelt } from '../utils/drawFelt.js';
 
 const COLLISION_RADIUS = 170;
@@ -40,6 +41,7 @@ export class GameScene extends Phaser.Scene {
     this.pauser    = new PauseManager();
     this.settings  = new SettingsManager();
     this.game.sound.mute = !this.settings.musicEnabled;
+    this.audio     = new AudioManager(this.game.sound);
     this.ui        = new UIManager(this, width);
 
     const segments = getActiveSegments(this.scorer.getSegmentCount());
@@ -71,6 +73,7 @@ export class GameScene extends Phaser.Scene {
     this.obstacles.update(delta, segments, speed, spawnInterval);
     this._resolveCollisions(segments);
     this.ui.update(this.health, this.scorer);
+    this.audio.sync(this.scorer.score);
   }
 
   _setupPause(width, height) {
@@ -130,6 +133,7 @@ export class GameScene extends Phaser.Scene {
       this.settings.toggleMusic();
       this.game.sound.mute = !this.settings.musicEnabled;
       this._musicBtn.setText(this._musicBtnLabel());
+      if (this.settings.musicEnabled) this.audio.sync(this.scorer.score);
     });
 
     this._onVisibilityChange = () => {
@@ -252,6 +256,7 @@ export class GameScene extends Phaser.Scene {
 
   _triggerGameOver() {
     this._cleanupPause();
+    this.audio.stop();
     this.obstacles.clear();
     this.wheel.destroy();
 

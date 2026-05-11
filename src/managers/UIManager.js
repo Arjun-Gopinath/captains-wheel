@@ -11,6 +11,7 @@ const CMB_Y  = HP_Y + HP_H + 8;   // 46
 const CMB_H  = 10;
 
 // Right panel (Score)
+const RP_Y   = LP_Y;
 const RP_W   = 158;
 const RP_H   = LP_H;
 

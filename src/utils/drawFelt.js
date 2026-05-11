@@ -18,13 +18,6 @@ export function drawFelt(scene, width, height) {
     bg.strokePath();
   }
 
-  const vig = 70;
-  bg.fillStyle(0x000000, 0.28);
-  bg.fillRect(0,           0,           vig,   height);
-  bg.fillRect(width - vig, 0,           vig,   height);
-  bg.fillRect(0,           0,           width, vig);
-  bg.fillRect(0,           height - vig, width, vig);
-
   bg.lineStyle(4,   0xc8a84b, 0.55);
   bg.strokeRoundedRect(18, 18, width - 36, height - 36, 24);
   bg.lineStyle(1.5, 0xc8a84b, 0.28);
