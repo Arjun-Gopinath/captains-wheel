@@ -48,3 +48,28 @@ describe('SettingsManager', () => {
     expect(new SettingsManager(storage).hintsEnabled).toBe(false);
   });
 });
+
+describe('SettingsManager — music', () => {
+  it('defaults music to enabled', () => {
+    expect(new SettingsManager(fakeStorage()).musicEnabled).toBe(true);
+  });
+
+  it('disables music after one toggleMusic', () => {
+    const s = new SettingsManager(fakeStorage());
+    s.toggleMusic();
+    expect(s.musicEnabled).toBe(false);
+  });
+
+  it('re-enables music after two toggleMusic calls', () => {
+    const s = new SettingsManager(fakeStorage());
+    s.toggleMusic();
+    s.toggleMusic();
+    expect(s.musicEnabled).toBe(true);
+  });
+
+  it('persists music setting across instances', () => {
+    const storage = fakeStorage();
+    new SettingsManager(storage).toggleMusic();
+    expect(new SettingsManager(storage).musicEnabled).toBe(false);
+  });
+});

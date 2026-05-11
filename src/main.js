@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { MenuScene } from './scenes/MenuScene.js';
 import { GameScene } from './scenes/GameScene.js';
 import { GameOverScene } from './scenes/GameOverScene.js';
 import { PauseScene } from './scenes/PauseScene.js';
@@ -9,5 +10,5 @@ new Phaser.Game({
   width: 800,
   height: 600,
   backgroundColor: '#0d3b1a',
-  scene: [GameScene, GameOverScene, PauseScene, TransitionScene],
+  scene: [MenuScene, GameScene, GameOverScene, PauseScene, TransitionScene],
 });

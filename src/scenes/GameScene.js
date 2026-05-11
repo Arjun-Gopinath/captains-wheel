@@ -10,6 +10,7 @@ import { getActiveSegments } from '../config/segments.js';
 import { isMatch } from '../utils/matcher.js';
 import { computeObstacleSpeed, computeSpawnInterval, BASE_SPEED, BASE_INTERVAL } from '../utils/speedScaler.js';
 import { SettingsManager } from '../managers/SettingsManager.js';
+import { drawFelt } from '../utils/drawFelt.js';
 
 const COLLISION_RADIUS = 170;
 const MISS_DAMAGE      = 10;
@@ -32,12 +33,13 @@ export class GameScene extends Phaser.Scene {
     const cx = width / 2;
     const cy = height / 2;
 
-    this._drawBackground(width, height);
+    drawFelt(this, width, height);
 
     this.health    = new HealthManager(100);
     this.scorer    = new ScoreManager();
     this.pauser    = new PauseManager();
     this.settings  = new SettingsManager();
+    this.game.sound.mute = !this.settings.musicEnabled;
     this.ui        = new UIManager(this, width);
 
     const segments = getActiveSegments(this.scorer.getSegmentCount());
@@ -78,23 +80,28 @@ export class GameScene extends Phaser.Scene {
     this._pauseKey1.on('down', this._onPauseKey, this);
     this._pauseKey2.on('down', this._onPauseKey, this);
 
-    const BTN_PW  = 250;
-    const BTN_PH  = 34;
+    const BTN_PW    = 316;
+    const BTN_PH    = 34;
     const btnPanelY = height - BTN_PH - 10;
     const btnCY     = btnPanelY + BTN_PH / 2;
+    const cx        = width / 2;
 
     const btnPanel = this.add.graphics().setDepth(11);
     btnPanel.fillStyle(0x050f05, 0.80);
-    btnPanel.fillRoundedRect(width / 2 - BTN_PW / 2, btnPanelY, BTN_PW, BTN_PH, 8);
+    btnPanel.fillRoundedRect(cx - BTN_PW / 2, btnPanelY, BTN_PW, BTN_PH, 8);
     btnPanel.lineStyle(1.5, 0xc8a84b, 0.6);
-    btnPanel.strokeRoundedRect(width / 2 - BTN_PW / 2, btnPanelY, BTN_PW, BTN_PH, 8);
-    btnPanel.lineStyle(1, 0xc8a84b, 0.22);
-    btnPanel.beginPath();
-    btnPanel.moveTo(width / 2, btnPanelY + 6);
-    btnPanel.lineTo(width / 2, btnPanelY + BTN_PH - 6);
-    btnPanel.strokePath();
+    btnPanel.strokeRoundedRect(cx - BTN_PW / 2, btnPanelY, BTN_PW, BTN_PH, 8);
 
-    this._pauseBtn = this.add.text(width / 2 - 62, btnCY, '❙❙  PAUSE', {
+    // Dividers between the three buttons
+    btnPanel.lineStyle(1, 0xc8a84b, 0.22);
+    for (const divX of [cx - 52, cx + 52]) {
+      btnPanel.beginPath();
+      btnPanel.moveTo(divX, btnPanelY + 6);
+      btnPanel.lineTo(divX, btnPanelY + BTN_PH - 6);
+      btnPanel.strokePath();
+    }
+
+    this._pauseBtn = this.add.text(cx - 104, btnCY, '❙❙  PAUSE', {
       fontSize: '13px', color: '#cccccc', fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(12).setInteractive({ useHandCursor: true });
 
@@ -102,7 +109,7 @@ export class GameScene extends Phaser.Scene {
     this._pauseBtn.on('pointerout',  () => this._pauseBtn.setColor('#cccccc'));
     this._pauseBtn.on('pointerdown', this._pauseGame, this);
 
-    this._hintsBtn = this.add.text(width / 2 + 62, btnCY, this._hintsBtnLabel(), {
+    this._hintsBtn = this.add.text(cx, btnCY, this._hintsBtnLabel(), {
       fontSize: '13px', color: '#cccccc', fontFamily: 'monospace',
     }).setOrigin(0.5).setDepth(12).setInteractive({ useHandCursor: true });
 
@@ -111,6 +118,18 @@ export class GameScene extends Phaser.Scene {
     this._hintsBtn.on('pointerdown', () => {
       this.settings.toggle();
       this._hintsBtn.setText(this._hintsBtnLabel());
+    });
+
+    this._musicBtn = this.add.text(cx + 104, btnCY, this._musicBtnLabel(), {
+      fontSize: '13px', color: '#cccccc', fontFamily: 'monospace',
+    }).setOrigin(0.5).setDepth(12).setInteractive({ useHandCursor: true });
+
+    this._musicBtn.on('pointerover', () => this._musicBtn.setColor('#ffdd44'));
+    this._musicBtn.on('pointerout',  () => this._musicBtn.setColor('#cccccc'));
+    this._musicBtn.on('pointerdown', () => {
+      this.settings.toggleMusic();
+      this.game.sound.mute = !this.settings.musicEnabled;
+      this._musicBtn.setText(this._musicBtnLabel());
     });
 
     this._onVisibilityChange = () => {
@@ -192,6 +211,10 @@ export class GameScene extends Phaser.Scene {
     return this.settings.hintsEnabled ? 'HINTS: ON' : 'HINTS: OFF';
   }
 
+  _musicBtnLabel() {
+    return this.settings.musicEnabled ? '♪ ON' : '♪ OFF';
+  }
+
   _onMatch(x, y, heal, gained) {
     this.cameras.main.flash(120, 0, 180, 0, false);
     new FloatingText(this, x, y, `+${gained}`, '#44ff44');
@@ -231,59 +254,17 @@ export class GameScene extends Phaser.Scene {
     this._cleanupPause();
     this.obstacles.clear();
     this.wheel.destroy();
+
+    const stored = parseInt(localStorage.getItem('captains-wheel:highscore') || '0', 10);
+    if (this.scorer.highScore > stored) {
+      localStorage.setItem('captains-wheel:highscore', String(this.scorer.highScore));
+    }
+
     this.scene.start('GameOverScene', {
       score:     this.scorer.score,
       highScore: this.scorer.highScore,
     });
   }
 
-  _drawBackground(width, height) {
-    const bg = this.add.graphics().setDepth(-2);
-
-    // Felt base
-    bg.fillStyle(0x1a5c2e, 1);
-    bg.fillRect(0, 0, width, height);
-
-    // Diagonal crosshatch — simulates woven felt texture
-    for (let i = -height; i < width + height; i += 10) {
-      bg.lineStyle(1, 0x2d7a42, 0.09);
-      bg.beginPath();
-      bg.moveTo(i,          0);
-      bg.lineTo(i + height, height);
-      bg.strokePath();
-
-      bg.lineStyle(1, 0x2d7a42, 0.09);
-      bg.beginPath();
-      bg.moveTo(i + height, 0);
-      bg.lineTo(i,          height);
-      bg.strokePath();
-    }
-
-    // Edge vignette — four dark strips
-    const vig = 70;
-    bg.fillStyle(0x000000, 0.28);
-    bg.fillRect(0,          0,          vig,   height);
-    bg.fillRect(width - vig, 0,          vig,   height);
-    bg.fillRect(0,          0,          width, vig);
-    bg.fillRect(0,          height - vig, width, vig);
-
-    // Gold double-border frame
-    bg.lineStyle(4, 0xc8a84b, 0.55);
-    bg.strokeRoundedRect(18, 18, width - 36, height - 36, 24);
-    bg.lineStyle(1.5, 0xc8a84b, 0.28);
-    bg.strokeRoundedRect(25, 25, width - 50, height - 50, 20);
-
-    // Corner suit watermarks
-    const corners = [
-      { sym: '♠', x: 56,         y: 56 },
-      { sym: '♥', x: width - 56, y: 56 },
-      { sym: '♣', x: 56,         y: height - 56 },
-      { sym: '♦', x: width - 56, y: height - 56 },
-    ];
-    for (const { sym, x, y } of corners) {
-      this.add.text(x, y, sym, {
-        fontSize: '54px', color: '#ffffff', fontFamily: 'serif',
-      }).setOrigin(0.5).setDepth(-1).setAlpha(0.07);
-    }
-  }
 }
+
