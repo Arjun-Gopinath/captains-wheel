@@ -78,29 +78,35 @@ export class GameScene extends Phaser.Scene {
     this._pauseKey1.on('down', this._onPauseKey, this);
     this._pauseKey2.on('down', this._onPauseKey, this);
 
-    const btnY = height - 14;
+    const BTN_PW  = 250;
+    const BTN_PH  = 34;
+    const btnPanelY = height - BTN_PH - 10;
+    const btnCY     = btnPanelY + BTN_PH / 2;
 
-    this._pauseBtn = this.add.text(width / 2 - 58, btnY, '❙❙  PAUSE', {
-      fontSize:        '14px',
-      color:           '#cccccc',
-      fontFamily:      'monospace',
-      backgroundColor: '#1a3a5c',
-      padding:         { x: 10, y: 5 },
-    }).setOrigin(0.5, 1).setDepth(12).setInteractive({ useHandCursor: true });
+    const btnPanel = this.add.graphics().setDepth(11);
+    btnPanel.fillStyle(0x050f05, 0.80);
+    btnPanel.fillRoundedRect(width / 2 - BTN_PW / 2, btnPanelY, BTN_PW, BTN_PH, 8);
+    btnPanel.lineStyle(1.5, 0xc8a84b, 0.6);
+    btnPanel.strokeRoundedRect(width / 2 - BTN_PW / 2, btnPanelY, BTN_PW, BTN_PH, 8);
+    btnPanel.lineStyle(1, 0xc8a84b, 0.22);
+    btnPanel.beginPath();
+    btnPanel.moveTo(width / 2, btnPanelY + 6);
+    btnPanel.lineTo(width / 2, btnPanelY + BTN_PH - 6);
+    btnPanel.strokePath();
 
-    this._pauseBtn.on('pointerover', () => this._pauseBtn.setColor('#ffffff'));
+    this._pauseBtn = this.add.text(width / 2 - 62, btnCY, '❙❙  PAUSE', {
+      fontSize: '13px', color: '#cccccc', fontFamily: 'monospace',
+    }).setOrigin(0.5).setDepth(12).setInteractive({ useHandCursor: true });
+
+    this._pauseBtn.on('pointerover', () => this._pauseBtn.setColor('#ffdd44'));
     this._pauseBtn.on('pointerout',  () => this._pauseBtn.setColor('#cccccc'));
     this._pauseBtn.on('pointerdown', this._pauseGame, this);
 
-    this._hintsBtn = this.add.text(width / 2 + 58, btnY, this._hintsBtnLabel(), {
-      fontSize:        '14px',
-      color:           '#cccccc',
-      fontFamily:      'monospace',
-      backgroundColor: '#1a3a5c',
-      padding:         { x: 10, y: 5 },
-    }).setOrigin(0.5, 1).setDepth(12).setInteractive({ useHandCursor: true });
+    this._hintsBtn = this.add.text(width / 2 + 62, btnCY, this._hintsBtnLabel(), {
+      fontSize: '13px', color: '#cccccc', fontFamily: 'monospace',
+    }).setOrigin(0.5).setDepth(12).setInteractive({ useHandCursor: true });
 
-    this._hintsBtn.on('pointerover', () => this._hintsBtn.setColor('#ffffff'));
+    this._hintsBtn.on('pointerover', () => this._hintsBtn.setColor('#ffdd44'));
     this._hintsBtn.on('pointerout',  () => this._hintsBtn.setColor('#cccccc'));
     this._hintsBtn.on('pointerdown', () => {
       this.settings.toggle();
