@@ -76,7 +76,7 @@ export class GameScene extends Phaser.Scene {
     this._pauseKey1.on('down', this._onPauseKey, this);
     this._pauseKey2.on('down', this._onPauseKey, this);
 
-    this._pauseBtn = this.add.text(width / 2, 14, '❙❙  PAUSE', {
+    this._pauseBtn = this.add.text(width / 2, 55, '❙❙  PAUSE', {
       fontSize:        '15px',
       color:           '#cccccc',
       fontFamily:      'monospace',
